@@ -15,19 +15,12 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "🤖 হ্যালো! আমি Sariat AI Bot.\n"
-        "আমাকে যেকোনো প্রশ্ন করুন।"
-    )
-
-
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "💡 শুধু একটি মেসেজ লিখুন, আমি AI দিয়ে উত্তর দেব।"
+        "🤖 হ্যালো! আমি Sariat AI Bot। আমাকে যেকোনো প্রশ্ন করুন।"
     )
 
 
 async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_message = update.message.text
+    user_text = update.message.text
 
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
@@ -35,12 +28,9 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     }
 
     data = {
-        "model": "deepseek/deepseek-chat-v3.1:free",
+        "model": "openai/gpt-4o-mini",
         "messages": [
-            {
-                "role": "user",
-                "content": user_message
-            }
+            {"role": "user", "content": user_text}
         ]
     }
 
@@ -55,16 +45,25 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
         result = response.json()
 
         if "choices" in result:
-            answer = result["choices"][0]["message"]["content"]
-            await update.message.reply_text(answer)
+            reply = result["choices"][0]["message"]["content"]
         else:
-            await update.message.reply_text(str(result))
+            reply = f"❌ Error:\n{result}"
+
+        await update.message.reply_text(reply)
 
     except Exception as e:
-        await update.message.reply_text(f"Error: {e}")
+        await update.message.reply_text(f"❌ Error: {e}")
 
 
 def main():
     app = Application.builder().token(BOT_TOKEN).build()
 
-    app.add_handler
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat))
+
+    print("🤖 Bot Started...")
+    app.run_polling()
+
+
+if __name__ == "__main__":
+    main()
