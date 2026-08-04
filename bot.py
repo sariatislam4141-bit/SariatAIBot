@@ -1,4 +1,5 @@
 import os
+import asyncio
 import requests
 from telegram import Update
 from telegram.ext import (
@@ -21,18 +22,29 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "🌐 ওয়েব সার্চ করতে লিখুন:\n"
         "/search আপনার প্রশ্ন"
     )
+
+
 async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_text = update.message.text
     text = user_text.lower()
 
     # Greeting
-    if any(x in text for x in ["আসসালামু আলাইকুম", "assalamu alaikum", "as-salamu alaykum"]):
+    if any(x in text for x in [
+        "আসসালামু আলাইকুম",
+        "assalamu alaikum",
+        "as-salamu alaykum"
+    ]):
         await update.message.reply_text(
             "ওয়ালাইকুমুস সালাম ওয়া রাহমাতুল্লাহি ওয়া বারাকাতুহ। 🤍"
         )
         return
 
-    if any(x in text for x in ["হাই", "hello", "hi", "হ্যালো"]):
+    if any(x in text for x in [
+        "হ্যালো",
+        "হাই",
+        "hello",
+        "hi"
+    ]):
         await update.message.reply_text(
             "হ্যালো! 😊 কীভাবে সাহায্য করতে পারি?"
         )
@@ -44,14 +56,13 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     }
 
     data = {
-        "model": "deepseek/deepseek-chat-v3.1",
+        "model": "deepseek/deepseek-chat:free",
         "messages": [
             {
                 "role": "system",
                 "content": (
                     "তুমি Sariat AI নামে একটি বাংলা AI Assistant। "
-                    "সবসময় ভদ্র, সহায়ক ও সংক্ষিপ্তভাবে উত্তর দেবে। "
-                    "ব্যবহারকারীর ধর্ম না জেনে কোনো ধর্মীয় সম্ভাষণ ব্যবহার করবে না।"
+                    "সবসময় ভদ্র, সহায়ক ও সংক্ষিপ্তভাবে উত্তর দেবে।"
                 ),
             },
             {
@@ -60,7 +71,8 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
             },
         ],
     }
-try:
+
+    try:
         response = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
             headers=headers,
@@ -73,21 +85,98 @@ try:
         if "choices" in result:
             reply = result["choices"][0]["message"]["content"]
         else:
-            reply = str(result)
+            reply = f"❌ Error:\n{result}"
 
         await update.message.reply_text(reply)
 
     except Exception as e:
         await update.message.reply_text(f"❌ Error: {e}")
+
+
+async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = " ".join(context.args)
+
+    if not query:
+        await update.message.reply_text(
+            "ব্যবহার:\n/search আপনার প্রশ্ন"
+        )
+        return
+
+    try:
+        tavily_response = requests.post(
+            "https://api.tavily.com/search",
+            headers={
+                "Authorization": f"Bearer {TAVILY_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "query": query,
+                "search_depth": "advanced",
+                "max_results": 5,
+            },
+            timeout=30,
+        )
+
+        tavily = tavily_response.json()
+
+        context_text = ""
+
+        for item in tavily.get("results", []):
+            context_text += (
+                f"Title: {item.get('title')}\n"
+                f"Content: {item.get('content')}\n\n"
+            )
+
+        headers = {
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Content-Type": "application/json",
+        }
+
+        data = {
+            "model": "deepseek/deepseek-chat:free",
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "নিচের ওয়েব তথ্য ব্যবহার করে বাংলায় সংক্ষেপে উত্তর দাও।",
+                },
+                {
+                    "role": "user",
+                    "content": f"প্রশ্ন: {query}\n\nওয়েব তথ্য:\n{context_text}",
+                },
+            ],
+        }
+
+        response = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers=headers,
+            json=data,
+            timeout=60,
+        )
+
+        result = response.json()
+
+        if "choices" in result:
+            answer = result["choices"][0]["message"]["content"]
+        else:
+            answer = str(result)
+
+        await update.message.reply_text(answer)
+
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error: {e}")
+   
+def main():
     app = Application.builder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat))
+    app.add_handler(CommandHandler("search", search))
+    app.add_handler(
+        MessageHandler(filters.TEXT & ~filters.COMMAND, chat)
+    )
 
-    print("🤖 Sariat AI Bot চলছে...")
-    await app.run_polling()
+    print("🤖 Sariat AI Bot Started...")
+    app.run_polling()
 
 
 if __name__ == "__main__":
-    import asyncio
-    asyncio.run(main())
+    main()
