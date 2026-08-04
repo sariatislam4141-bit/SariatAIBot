@@ -1,7 +1,13 @@
 import os
 import requests
 from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    MessageHandler,
+    ContextTypes,
+    filters,
+)
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
@@ -10,9 +16,9 @@ TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "🤖 হ্যালো! আমি Sariat AI Bot\n\n"
-        "💬 যেকোনো প্রশ্ন করুন\n"
-        "🌐 ওয়েব সার্চ:\n"
+        "🤖 হ্যালো! আমি Sariat AI Bot.\n\n"
+        "💬 আমাকে যেকোনো প্রশ্ন করুন।\n"
+        "🌐 ওয়েব সার্চ করতে লিখুন:\n"
         "/search আপনার প্রশ্ন"
     )
 
@@ -28,7 +34,14 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = {
         "model": "deepseek/deepseek-chat-v3.1",
         "messages": [
-            {"role": "user", "content": user_text}
+            {
+                "role": "system",
+                "content": "তুমি Sariat AI নামে একটি বাংলা AI Assistant। সবসময় সুন্দর, পরিষ্কার ও সহায়কভাবে উত্তর দেবে।"
+            },
+            {
+                "role": "user",
+                "content": user_text
+            }
         ]
     }
 
@@ -51,8 +64,6 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     except Exception as e:
         await update.message.reply_text(f"❌ {e}")
-
-
 async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = " ".join(context.args)
 
@@ -92,26 +103,31 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "model": "deepseek/deepseek-chat-v3.1",
             "messages": [
                 {
+                    "role": "system",
+                    "content": "নিচের Web Search তথ্য ব্যবহার করে বাংলায় সংক্ষিপ্ত ও সঠিক উত্তর দাও।"
+                },
+                {
                     "role": "user",
-                    "content":
-                    f"নিচের তথ্য ব্যবহার করে বাংলায় সুন্দর উত্তর দাও।\n\nপ্রশ্ন: {query}\n\nতথ্য:\n{context_text}"
+                    "content": f"প্রশ্ন: {query}\n\nওয়েব তথ্য:\n{context_text}"
                 }
             ]
         }
 
-        ai = requests.post(
+        response = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
             headers=headers,
             json=data,
             timeout=60,
-        ).json()
+        )
 
-        if "choices" in ai:
-            answer = ai["choices"][0]["message"]["content"]
+        result = response.json()
+
+        if "choices" in result:
+            reply = result["choices"][0]["message"]["content"]
         else:
-            answer = str(ai)
+            reply = str(result)
 
-        await update.message.reply_text(answer)
+        await update.message.reply_text(reply)
 
     except Exception as e:
         await update.message.reply_text(f"❌ {e}")
@@ -124,7 +140,7 @@ def main():
     app.add_handler(CommandHandler("search", search))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat))
 
-    print("Bot Started...")
+    print("🤖 Bot Started...")
     app.run_polling()
 
 
