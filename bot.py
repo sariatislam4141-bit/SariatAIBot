@@ -238,13 +238,13 @@ async def image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             result = response.json()
 
             if "images" in result:
-            image_url = result["images"][0]["url"]
+                image_url = result["images"][0]["url"]
             await update.message.reply_photo(photo=image_url)
         else:
             await update.message.reply_text(f"❌ Error:\n{result}")
 
-    except Exception as e:
-        await update.message.reply_text(f"❌ {e}")
+        except Exception as e:
+            await update.message.reply_text(f"❌ {e}")
 
 def main():
     app = Application.builder().token(BOT_TOKEN).build()
