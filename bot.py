@@ -138,7 +138,7 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"❌ Error: {e}")
         
     async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = " ".join(context.args)
+        query = " ".join(context.args)
 
     if not query:
         await update.message.reply_text(
