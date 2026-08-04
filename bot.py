@@ -205,12 +205,50 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     except Exception as e:
         await update.message.reply_text(f"❌ Error: {e}")
-   
+   async def image(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args:
+        await update.message.reply_text(
+            "🖼️ ব্যবহার:\n/image একটি সুন্দর পাহাড়"
+        )
+        return
+
+    prompt = " ".join(context.args)
+
+    await update.message.reply_text("🎨 ছবি তৈরি হচ্ছে...")
+
+    try:
+        headers = {
+            "Authorization": f"Key {FAL_KEY}",
+            "Content-Type": "application/json",
+        }
+
+        payload = {
+            "prompt": prompt
+        }
+
+        response = requests.post(
+            "https://fal.run/fal-ai/flux/dev",
+            headers=headers,
+            json=payload,
+            timeout=120,
+        )
+
+        result = response.json()
+
+        if "images" in result:
+            image_url = result["images"][0]["url"]
+            await update.message.reply_photo(photo=image_url)
+        else:
+            await update.message.reply_text(f"❌ Error:\n{result}")
+
+    except Exception as e:
+        await update.message.reply_text(f"❌ {e}")
 def main():
     app = Application.builder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("search", search))
+    app.add_handler(CommandHandler("image", image))
     app.add_handler(
         MessageHandler(filters.TEXT & ~filters.COMMAND, chat)
     )
