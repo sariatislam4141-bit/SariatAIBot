@@ -210,6 +210,8 @@ def main():
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("search", search))
+    app.add_handler(CommandHandler("image", image))
+    app.add_handler(CommandHandler("video", video))
     app.add_handler(
         MessageHandler(filters.TEXT & ~filters.COMMAND, chat)
     )
