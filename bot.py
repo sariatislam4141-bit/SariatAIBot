@@ -210,7 +210,7 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"❌ Error: {e}")
         
     async def image(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    prompt = " ".join(context.args)
+        prompt = " ".join(context.args)
 
     if not prompt:
         await update.message.reply_text(
