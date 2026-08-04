@@ -56,7 +56,7 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     }
 
     data = {
-        "model": "deepseek/deepseek-chat:free",
+        "model": "openai/gpt-oss-20b:free"
         "messages": [
             {
                 "role": "system",
