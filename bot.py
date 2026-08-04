@@ -25,7 +25,20 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_text = update.message.text
+# Greeting detection
+text = user_text.lower()
 
+if "আসসালামু আলাইকুম" in text or "assalamu alaikum" in text:
+    await update.message.reply_text("ওয়ালাইকুমুস সালাম ওয়া রাহমাতুল্লাহি ওয়া বারাকাতুহ। 🤍")
+    return
+
+if "নমস্কার" in text:
+    await update.message.reply_text("নমস্কার! 😊 কীভাবে সাহায্য করতে পারি?")
+    return
+
+if "hello" in text or "hi" in text or "হাই" in text or "হ্যালো" in text:
+    await update.message.reply_text("হ্যালো! 😊 কীভাবে সাহায্য করতে পারি?")
+    return
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
         "Content-Type": "application/json",
