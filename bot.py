@@ -205,12 +205,10 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     except Exception as e:
         await update.message.reply_text(f"❌ Error: {e}")
-    async def image(update: Update, context:
-    ContextTypes.DEFAULT_TYPE):
+    async def image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not context.args:
-        await update.message.reply_text(
-            "🖼️ ব্যবহার:\n/image একটি সুন্দর পাহাড়"
-        )
+            await update.message.reply_text(
+            "🖼️ ব্যবহার:\n/image একটি সুন্দর পাহাড়")
         return
 
     prompt = " ".join(context.args)
@@ -244,7 +242,6 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     except Exception as e:
         await update.message.reply_text(f"❌ {e}")
-
 def main():
     app = Application.builder().token(BOT_TOKEN).build()
 
