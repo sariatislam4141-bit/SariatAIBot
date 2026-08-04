@@ -233,7 +233,7 @@ async def image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             headers=headers,
             json=payload,
             timeout=120,
-        )
+            )
 
         result = response.json()
 
