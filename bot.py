@@ -78,7 +78,7 @@ try:
         await update.message.reply_text(reply)
 
     except Exception as e:
-        await update.message.reply_text(f"❌ Error: {e}")async def main():
+        await update.message.reply_text(f"❌ Error: {e}")async def main(): 
     app = Application.builder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
