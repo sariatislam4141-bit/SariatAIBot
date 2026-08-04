@@ -254,21 +254,17 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
 
     except Exception as e:
-        await update.message.reply_text(f"❌ Error: {e}")
-        def main():
+    await update.message.reply_text(f"❌ Error: {e}")
+
+
+def main():
     app = Application.builder().token(BOT_TOKEN).build()
 
-    # Commands
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("search", search))
     app.add_handler(CommandHandler("image", image))
-
-    # Normal Chat
     app.add_handler(
-        MessageHandler(
-            filters.TEXT & ~filters.COMMAND,
-            chat,
-        )
+        MessageHandler(filters.TEXT & ~filters.COMMAND, chat)
     )
 
     print("🤖 Sariat AI Bot Started...")
