@@ -59,7 +59,8 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "content": user_text,
             },
         ],
-    }try:
+    }
+try:
         response = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
             headers=headers,
