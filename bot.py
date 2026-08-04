@@ -209,19 +209,19 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
     async def image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not context.args:
             await update.message.reply_text(
-            "🖼️ ব্যবহার:\n/image একটি সুন্দর পাহাড়"
+                "🖼️ ব্যবহার:\n/image একটি সুন্দর পাহাড়"
             )
             return
 
-    prompt = " ".join(context.args)
+        prompt = " ".join(context.args)
 
-    await update.message.reply_text("🎨 ছবি তৈরি হচ্ছে...")
+        await update.message.reply_text("🎨 ছবি তৈরি হচ্ছে...")
 
-    try:
-        headers = {
-            "Authorization": f"Key {FAL_KEY}",
-            "Content-Type": "application/json",
-        }
+        try:
+            headers = {
+                "Authorization": f"Key {FAL_KEY}",
+                "Content-Type": "application/json",
+            }
 
         payload = {
             "prompt": prompt
