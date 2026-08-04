@@ -41,6 +41,29 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_text = update.message.text
+memory = load_memory()
+user_id = str(update.effective_user.id)
+
+if user_id not in memory:
+    memory[user_id] = {}
+
+if "আমার নাম" in user_text:
+    name = user_text.replace("আমার নাম", "").strip()
+    memory[user_id]["name"] = name
+    save_memory(memory)
+    await update.message.reply_text(f"ধন্যবাদ! 😊 আপনার নাম {name} মনে রাখলাম।")
+    return
+
+if "আমার নাম কি" in user_text:
+    if "name" in memory[user_id]:
+        await update.message.reply_text(
+            f"আপনার নাম {memory[user_id]['name']}। 😊"
+        )
+    else:
+        await update.message.reply_text(
+            "আমি এখনও আপনার নাম জানি না।"
+        )
+    return
     text = user_text.lower()
 
     # Greeting
