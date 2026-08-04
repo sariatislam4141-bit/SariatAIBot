@@ -14,6 +14,7 @@ from telegram.ext import (
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
+FAL_KEY = os.getenv("FAL_KEY")
 MEMORY_FILE = "memory.json"
 
 if not os.path.exists(MEMORY_FILE):
