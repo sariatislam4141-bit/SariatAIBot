@@ -1,5 +1,6 @@
 import os
 import requests
+
 from telegram import Update
 from telegram.ext import (
     Application,
@@ -24,21 +25,34 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     user_text = update.message.text
-# Greeting detection
-text = user_text.lower()
+    text = user_text.lower()
 
-if "আসসালামু আলাইকুম" in text or "assalamu alaikum" in text:
-    await update.message.reply_text("ওয়ালাইকুমুস সালাম ওয়া রাহমাতুল্লাহি ওয়া বারাকাতুহ। 🤍")
-    return
+    # Greeting
+    if "আসসালামু আলাইকুম" in text or "assalamu alaikum" in text:
+        await update.message.reply_text(
+            "ওয়ালাইকুমুস সালাম ওয়া রাহমাতুল্লাহি ওয়া বারাকাতুহ। 🤍"
+        )
+        return
 
-if "নমস্কার" in text:
-    await update.message.reply_text("নমস্কার! 😊 কীভাবে সাহায্য করতে পারি?")
-    return
+    if "নমস্কার" in text:
+        await update.message.reply_text(
+            "নমস্কার! 😊 কীভাবে সাহায্য করতে পারি?"
+        )
+        return
 
-if "hello" in text or "hi" in text or "হাই" in text or "হ্যালো" in text:
-    await update.message.reply_text("হ্যালো! 😊 কীভাবে সাহায্য করতে পারি?")
-    return
+    if (
+        "হ্যালো" in text
+        or "হাই" in text
+        or "hello" in text
+        or "hi" in text
+    ):
+        await update.message.reply_text(
+            "হ্যালো! 😊 কীভাবে সাহায্য করতে পারি?"
+        )
+        return
+
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
         "Content-Type": "application/json",
@@ -49,16 +63,21 @@ if "hello" in text or "hi" in text or "হাই" in text or "হ্যালো
         "messages": [
             {
                 "role": "system",
-                "content": "তুমি Sariat AI নামে একটি বাংলা AI Assistant। সবসময় সুন্দর, পরিষ্কার ও সহায়কভাবে উত্তর দেবে।"
+                "content": (
+                    "তুমি Sariat AI নামে একটি বাংলা AI Assistant। "
+                    "সবসময় ভদ্র, সহায়ক ও সংক্ষিপ্তভাবে উত্তর দেবে। "
+                    "ব্যবহারকারীর ধর্ম বা ব্যক্তিগত পরিচয় না জেনে "
+                    "'নমস্কার' বা কোনো ধর্মীয় সম্ভাষণ ব্যবহার করবে না। "
+                    "নিরপেক্ষভাবে 'হ্যালো' ব্যবহার করবে।"
+                ),
             },
             {
                 "role": "user",
-                "content": user_text
-            }
-        ]
+                "content": user_text,
+            },
+        ],
     }
-
-    try:
+try:
         response = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
             headers=headers,
@@ -77,11 +96,16 @@ if "hello" in text or "hi" in text or "হাই" in text or "হ্যালো
 
     except Exception as e:
         await update.message.reply_text(f"❌ {e}")
+
+
 async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     query = " ".join(context.args)
 
     if not query:
-        await update.message.reply_text("ব্যবহার:\n/search আপনার প্রশ্ন")
+        await update.message.reply_text(
+            "ব্যবহার:\n/search আপনার প্রশ্ন"
+        )
         return
 
     try:
@@ -106,8 +130,7 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 f"শিরোনাম: {item.get('title')}\n"
                 f"তথ্য: {item.get('content')}\n\n"
             )
-
-        headers = {
+headers = {
             "Authorization": f"Bearer {OPENROUTER_API_KEY}",
             "Content-Type": "application/json",
         }
@@ -117,13 +140,13 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "messages": [
                 {
                     "role": "system",
-                    "content": "নিচের Web Search তথ্য ব্যবহার করে বাংলায় সংক্ষিপ্ত ও সঠিক উত্তর দাও।"
+                    "content": "তুমি Sariat AI। নিচের ওয়েব সার্চের তথ্য ব্যবহার করে সংক্ষিপ্ত, সঠিক ও বাংলায় উত্তর দাও।",
                 },
                 {
                     "role": "user",
-                    "content": f"প্রশ্ন: {query}\n\nওয়েব তথ্য:\n{context_text}"
-                }
-            ]
+                    "content": f"প্রশ্ন: {query}\n\nওয়েব তথ্য:\n{context_text}",
+                },
+            ],
         }
 
         response = requests.post(
@@ -136,24 +159,27 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
         result = response.json()
 
         if "choices" in result:
-            reply = result["choices"][0]["message"]["content"]
+            answer = result["choices"][0]["message"]["content"]
         else:
-            reply = str(result)
+            answer = str(result)
 
-        await update.message.reply_text(reply)
+        await update.message.reply_text(answer)
 
     except Exception as e:
         await update.message.reply_text(f"❌ {e}")
-
-
 def main():
     app = Application.builder().token(BOT_TOKEN).build()
 
+    # Commands
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("search", search))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat))
 
-    print("🤖 Bot Started...")
+    # Normal chat
+    app.add_handler(
+        MessageHandler(filters.TEXT & ~filters.COMMAND, chat)
+    )
+
+    print("🤖 Sariat AI Bot Started...")
     app.run_polling()
 
 
