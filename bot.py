@@ -237,7 +237,7 @@ async def image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             result = response.json()
 
-        if "images" in result:
+            if "images" in result:
             image_url = result["images"][0]["url"]
             await update.message.reply_photo(photo=image_url)
         else:
