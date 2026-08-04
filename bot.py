@@ -76,8 +76,7 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "content": user_text,
             },
         ],
-    }
-try:
+    }try:
         response = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
             headers=headers,
@@ -129,8 +128,7 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
             context_text += (
                 f"শিরোনাম: {item.get('title')}\n"
                 f"তথ্য: {item.get('content')}\n\n"
-            )
-headers = {
+            )headers = {
             "Authorization": f"Bearer {OPENROUTER_API_KEY}",
             "Content-Type": "application/json",
         }
@@ -166,8 +164,7 @@ headers = {
         await update.message.reply_text(answer)
 
     except Exception as e:
-        await update.message.reply_text(f"❌ {e}")
-def main():
+        await update.message.reply_text(f"❌ {e}")def main():
     app = Application.builder().token(BOT_TOKEN).build()
 
     # Commands
