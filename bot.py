@@ -12,15 +12,31 @@ from telegram.ext import (
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
+# প্রতিটি ব্যবহারকারীর জন্য আলাদা মেমোরি
+memory = {}
+
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "🤖 হ্যালো! আমি Sariat AI Bot। আমাকে যেকোনো প্রশ্ন করুন।"
+        "🤖 হ্যালো! আমি Sariat AI Bot.\n\n"
+        "আমি AI দিয়ে আপনার প্রশ্নের উত্তর দিতে পারি। 😊"
     )
 
 
 async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
     user_text = update.message.text
+
+    if user_id not in memory:
+        memory[user_id] = []
+
+    memory[user_id].append({
+        "role": "user",
+        "content": user_text
+    })
+
+    # শুধু শেষ ১০টি মেসেজ রাখা
+    messages = memory[user_id][-10:]
 
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
@@ -28,10 +44,8 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     }
 
     data = {
-        "model": "openai/gpt-4o-mini",
-        "messages": [
-            {"role": "user", "content": user_text}
-        ]
+        "model": "deepseek/deepseek-chat-v3.1:free",
+        "messages": messages,
     }
 
     try:
@@ -46,10 +60,16 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         if "choices" in result:
             reply = result["choices"][0]["message"]["content"]
-        else:
-            reply = f"❌ Error:\n{result}"
 
-        await update.message.reply_text(reply)
+            memory[user_id].append({
+                "role": "assistant",
+                "content": reply
+            })
+
+            await update.message.reply_text(reply)
+
+        else:
+            await update.message.reply_text(f"❌ Error:\n{result}")
 
     except Exception as e:
         await update.message.reply_text(f"❌ Error: {e}")
@@ -61,7 +81,7 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat))
 
-    print("🤖 Bot Started...")
+    print("🤖 Sariat AI Bot Started...")
     app.run_polling()
 
 
