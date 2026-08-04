@@ -44,7 +44,7 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     }
 
     data = {
-        "model": "deepseek/deepseek-chat-v3.1:free",
+        "model": "deepseek/deepseek-chat-v3.1",
         "messages": messages,
     }
 
