@@ -1,7 +1,7 @@
 import os
-import asyncio
-import requests
 import json
+import requests
+
 from telegram import Update
 from telegram.ext import (
     Application,
@@ -15,6 +15,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 FAL_KEY = os.getenv("FAL_KEY")
+
 MEMORY_FILE = "memory.json"
 
 if not os.path.exists(MEMORY_FILE):
@@ -31,17 +32,19 @@ def save_memory(memory):
     with open(MEMORY_FILE, "w", encoding="utf-8") as f:
         json.dump(memory, f, ensure_ascii=False, indent=2)
 
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "🤖 হ্যালো! আমি Sariat AI Bot.\n\n"
+        "🤖 হ্যালো! আমি Sariat AI Bot\n\n"
         "💬 আমাকে যেকোনো প্রশ্ন করুন।\n"
-        "🌐 ওয়েব সার্চ করতে লিখুন:\n"
-        "/search আপনার প্রশ্ন"
+        "🌐 /search = Web Search\n"
+        "🖼️ /image = Image Generate"
     )
 
 
 async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_text = update.message.text
+
     memory = load_memory()
     user_id = str(update.effective_user.id)
 
@@ -52,15 +55,16 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
         name = user_text.replace("আমার নাম", "").strip()
         memory[user_id]["name"] = name
         save_memory(memory)
+
         await update.message.reply_text(
-            f"ধন্যবাদ! 😊 আপনার নাম {name} মনে রাখলাম।"
+            f"ধন্যবাদ 😊 আপনার নাম {name} মনে রাখলাম।"
         )
         return
 
     if "আমার নাম কী" in user_text:
         if "name" in memory[user_id]:
             await update.message.reply_text(
-                f"আপনার নাম {memory[user_id]['name']} 😊"
+                f"আপনার নাম {memory[user_id]['name']}"
             )
         else:
             await update.message.reply_text(
@@ -69,14 +73,14 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     text = user_text.lower()
-    # Greeting
+
     if any(x in text for x in [
         "আসসালামু আলাইকুম",
         "assalamu alaikum",
-        "as-salamu alaykum"
+        "as-salamu alaykum",
     ]):
         await update.message.reply_text(
-            "ওয়ালাইকুমুস সালাম ওয়া রাহমাতুল্লাহি ওয়া বারাকাতুহ। 🤍"
+            "ওয়ালাইকুমুস সালাম ওয়া রাহমাতুল্লাহি ওয়া বারাকাতুহ 🤍"
         )
         return
 
@@ -84,10 +88,10 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "হ্যালো",
         "হাই",
         "hello",
-        "hi"
+        "hi",
     ]):
         await update.message.reply_text(
-            "হ্যালো! 😊 কীভাবে সাহায্য করতে পারি?"
+            "হ্যালো 😊 কীভাবে সাহায্য করতে পারি?"
         )
         return
 
@@ -103,7 +107,7 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "role": "system",
                 "content": (
                     "তুমি Sariat AI নামে একটি বাংলা AI Assistant। "
-                    "সবসময় ভদ্র, সহায়ক ও সংক্ষিপ্তভাবে উত্তর দেবে।"
+                    "সবসময় বাংলায় সংক্ষিপ্ত ও ভদ্রভাবে উত্তর দেবে।"
                 ),
             },
             {
@@ -126,20 +130,18 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if "choices" in result:
             reply = result["choices"][0]["message"]["content"]
         else:
-            reply = f"❌ Error:\n{result}"
+            reply = str(result)
 
         await update.message.reply_text(reply)
 
     except Exception as e:
         await update.message.reply_text(f"❌ Error: {e}")
-
-
-async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = " ".join(context.args)
 
     if not query:
         await update.message.reply_text(
-            "ব্যবহার:\n/search আপনার প্রশ্ন"
+            "🔎 ব্যবহার:\n/search আপনার প্রশ্ন"
         )
         return
 
@@ -174,11 +176,11 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
         }
 
         data = {
-            "model": "deepseek/deepseek-chat:free",
+            "model": "openai/gpt-oss-20b:free",
             "messages": [
                 {
                     "role": "system",
-                    "content": "নিচের ওয়েব তথ্য ব্যবহার করে বাংলায় সংক্ষেপে উত্তর দাও।",
+                    "content": "নিচের ওয়েব তথ্য ব্যবহার করে বাংলায় সংক্ষিপ্ত উত্তর দাও।",
                 },
                 {
                     "role": "user",
@@ -205,55 +207,67 @@ async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     except Exception as e:
         await update.message.reply_text(f"❌ Error: {e}")
+        
+        async def image(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    prompt = " ".join(context.args)
 
+    if not prompt:
+        await update.message.reply_text(
+            "🖼️ ব্যবহার:\n/image একটি সুন্দর পাহাড়"
+        )
+        return
 
-async def image(update: Update, context: ContextTypes.DEFAULT_TYPE):
-        if not context.args:
-            await update.message.reply_text(
-                "🖼️ ব্যবহার:\n/image একটি সুন্দর পাহাড়"
-            )
-            return
+    await update.message.reply_text("🎨 ছবি তৈরি হচ্ছে...")
 
-        prompt = " ".join(context.args)
+    try:
+        headers = {
+            "Authorization": f"Key {FAL_KEY}",
+            "Content-Type": "application/json",
+        }
 
-        await update.message.reply_text("🎨 ছবি তৈরি হচ্ছে...")
-
-        try:
-            headers = {
-                "Authorization": f"Key {FAL_KEY}",
-                "Content-Type": "application/json",
-            }
-
-            payload = {
+        payload = {
             "prompt": prompt
         }
 
-            response = requests.post(
+        response = requests.post(
             "https://fal.run/fal-ai/flux/dev",
             headers=headers,
             json=payload,
             timeout=120,
+        )
+
+        if response.status_code != 200:
+            await update.message.reply_text(
+                f"❌ API Error:\n{response.text}"
             )
+            return
 
-            result = response.json()
+        result = response.json()
 
-            if "images" in result:
-                image_url = result["images"][0]["url"]
+        if "images" in result and len(result["images"]) > 0:
+            image_url = result["images"][0]["url"]
             await update.message.reply_photo(photo=image_url)
         else:
-            await update.message.reply_text(f"❌ Error:\n{result}")
+            await update.message.reply_text(
+                f"❌ ছবি তৈরি করা যায়নি\n\n{result}"
+            )
 
-        except Exception as e:
-            await update.message.reply_text(f"❌ {e}")
-
-def main():
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error: {e}")
+        def main():
     app = Application.builder().token(BOT_TOKEN).build()
 
+    # Commands
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("search", search))
     app.add_handler(CommandHandler("image", image))
+
+    # Normal Chat
     app.add_handler(
-        MessageHandler(filters.TEXT & ~filters.COMMAND, chat)
+        MessageHandler(
+            filters.TEXT & ~filters.COMMAND,
+            chat,
+        )
     )
 
     print("🤖 Sariat AI Bot Started...")
