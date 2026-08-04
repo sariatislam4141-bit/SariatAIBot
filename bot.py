@@ -41,7 +41,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_text = update.message.text
-memory = load_memory()
+    memory = load_memory()
 user_id = str(update.effective_user.id)
 
 if user_id not in memory:
