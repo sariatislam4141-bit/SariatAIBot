@@ -228,7 +228,7 @@ async def image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "prompt": prompt
         }
 
-        response = requests.post(
+            response = requests.post(
             "https://fal.run/fal-ai/flux/dev",
             headers=headers,
             json=payload,
