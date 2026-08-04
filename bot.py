@@ -224,7 +224,7 @@ async def image(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "Content-Type": "application/json",
             }
 
-        payload = {
+            payload = {
             "prompt": prompt
         }
 
