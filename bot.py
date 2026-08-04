@@ -235,7 +235,7 @@ async def image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             timeout=120,
             )
 
-        result = response.json()
+            result = response.json()
 
         if "images" in result:
             image_url = result["images"][0]["url"]
